@@ -9,6 +9,8 @@ export default function Lamp() {
 
   const headRef = useRef();
   const glassRef = useRef();
+  const teloRef = useRef();
+
   const { pointer } = useThree();
   const current = useRef({ x: 0, y: 0 });
   const input = useRef({ x: 0, y: 0 });
@@ -21,6 +23,10 @@ export default function Lamp() {
 
   useEffect(() => {
     scene.traverse((child) => {
+      if (child.name === "Telo") {
+        teloRef.current = child;
+      }
+
       if (child.name === "Glava") {
         headRef.current = child;
       }
@@ -104,6 +110,33 @@ export default function Lamp() {
       const breathe = Math.sin(t * 1.5) * 0.5 + 0.5;
       glassRef.current.material.emissiveIntensity = 0.8 + breathe * 0.25;
     }
+
+    const cycle = t % 20; // ciklus od 20 sekundi
+
+    let target;
+
+    if (cycle < 6) {
+      // lagano ljuljanje
+      target = Math.sin(cycle * 0.5) * 0.06 + Math.sin(cycle * 1.1) * 0.012;
+    } else if (cycle < 13) {
+      // vece ljuljanje, glatko
+      const p = (cycle - 6) / 7;
+      const amp = Math.sin(p * Math.PI) * 0.35;
+      target = Math.sin(cycle * 0.4) * amp;
+    } else {
+      // vraćanje u lagano
+      const p = (cycle - 13) / 7;
+      const amp = 0.35 * (1 - p) + 0.06 * p;
+      target = Math.sin(cycle * 0.4) * amp;
+    }
+
+    // lerp za glatke prelaze bez skokova
+    current.current.z = THREE.MathUtils.lerp(
+      current.current.z ?? 0,
+      target,
+      0.03,
+    );
+    teloRef.current.rotation.z = current.current.z;
   });
 
   return (
