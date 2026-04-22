@@ -9,8 +9,14 @@ export default function Lamp() {
   const headRef = useRef();
   const glassRef = useRef();
   const { pointer } = useThree();
+
   const current = useRef({ x: 0, y: 0 });
-  const time = useRef(0);
+  const input = useRef({ x: 0, y: 0 });
+
+  const isMobileView = window.innerWidth < 640;
+
+  const isMobile =
+    typeof window !== "undefined" && /Mobi|Android/i.test(navigator.userAgent);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -20,18 +26,42 @@ export default function Lamp() {
 
       if (child.name === "Staklo") {
         glassRef.current = child;
-        child.material.emissive = new THREE.Color("#ffffff");
-        child.material.emissiveIntensity = 0.5;
+        child.material.emissive.set("#eeeeff");
+        child.material.emissiveIntensity = 3;
       }
     });
   }, [scene]);
 
-  useFrame(() => {
-    time.current += 0.03;
+  useEffect(() => {
+    // 🖱 desktop mouse
+    const onMouse = (e) => {
+      input.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      input.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
 
-    // -----------------------
-    // 🧠 HEAD MOVEMENT
-    // -----------------------
+    // 📱 mobile gyro
+    const onGyro = (e) => {
+      input.current.x = (e.gamma || 0) / 45; // left-right tilt
+      input.current.y = (e.beta || 0) / 45; // up-down tilt
+    };
+
+    if (isMobile) {
+      window.addEventListener("deviceorientation", onGyro);
+    } else {
+      window.addEventListener("mousemove", onMouse);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", onMouse);
+      window.removeEventListener("deviceorientation", onGyro);
+    };
+  }, [isMobile]);
+
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+
+    if (!headRef.current) return;
+
     if (headRef.current) {
       current.current.x = THREE.MathUtils.lerp(
         current.current.x,
@@ -45,26 +75,34 @@ export default function Lamp() {
         0.08,
       );
 
-      headRef.current.rotation.y = current.current.x * 1.2;
-      headRef.current.rotation.z = -current.current.y * -0.6;
+      //headRef.current.rotation.y = current.current.x * 1.2;
+
+      const x = current.current.x;
+      const rotY =
+        x < 0
+          ? x * Math.pow(Math.abs(x) + 0.001, 0.1) * 0.6
+          : x * Math.pow(Math.abs(x) + 0.001, -0.3) * 1.6;
+
+      headRef.current.rotation.y = rotY;
+      headRef.current.rotation.z = current.current.y * 0.6;
     }
 
-    // -----------------------
-    // 🌟 PIXAR BREATHING LIGHT
-    // -----------------------
-    const breathe = Math.sin(time.current) * 0.5 + 0.5;
-    const pulse = 0.6 + breathe * 1.2;
-
     if (glassRef.current) {
-      glassRef.current.material.emissiveIntensity = pulse;
+      // Pulsiranje svetla
+      const breathe = Math.sin(t * 1.5) * 0.5 + 0.5;
+      glassRef.current.material.emissiveIntensity = 0.8 + breathe * 0.25;
     }
   });
 
   return (
     <primitive
       object={scene}
-      scale={0.5}
-      position={[1.5, -1.75, 0]}
+      scale={0.45}
+      position={
+        isMobileView
+          ? [0.8, -1.5, 0] // 👈 MOBILE: pomeri levo
+          : [1.5, -1.25, 0] // DESKTOP
+      }
       rotation={[0, -Math.PI / 1.25, 0]}
     />
   );
