@@ -10,10 +10,10 @@ export default function Lamp() {
   const headRef = useRef();
   const glassRef = useRef();
   const { pointer } = useThree();
-
   const current = useRef({ x: 0, y: 0 });
   const input = useRef({ x: 0, y: 0 });
-
+  const gyroOffset = useRef({ x: 0, y: 0 });
+  const gyroCalibrated = useRef(false);
   const isMobileView = window.innerWidth < 640;
 
   const isMobile =
@@ -34,16 +34,20 @@ export default function Lamp() {
   }, [scene]);
 
   useEffect(() => {
-    // 🖱 desktop mouse
+    const onGyro = (e) => {
+      if (!gyroCalibrated.current) {
+        gyroOffset.current.x = e.gamma || 0;
+        gyroOffset.current.y = e.beta || 0;
+        gyroCalibrated.current = true;
+      }
+
+      input.current.x = ((e.gamma || 0) - gyroOffset.current.x) / 45;
+      input.current.y = ((e.beta || 0) - gyroOffset.current.y) / 45;
+    };
+
     const onMouse = (e) => {
       input.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       input.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
-
-    // 📱 mobile gyro
-    const onGyro = (e) => {
-      input.current.x = (e.gamma || 0) / 45; // left-right tilt
-      input.current.y = (e.beta || 0) / 45; // up-down tilt
     };
 
     if (isMobile) {
