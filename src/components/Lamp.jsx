@@ -4,7 +4,8 @@ import { useRef, useEffect } from "react";
 import * as THREE from "three";
 
 export default function Lamp() {
-  const { scene } = useGLTF("/lampko.glb");
+  const base = import.meta.env.BASE_URL;
+  const { scene } = useGLTF(`${base}lampko.glb`);
 
   const headRef = useRef();
   const glassRef = useRef();

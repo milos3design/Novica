@@ -1,8 +1,9 @@
 import { useState } from "react";
 
+const base = import.meta.env.BASE_URL;
 const images = Array.from({ length: 20 }, (_, i) => ({
   id: i,
-  src: `../public/gallery/${i + 1}.jpg`,
+  src: `${base}gallery/${i + 1}.jpg`,
 }));
 
 export default function Gallery() {
