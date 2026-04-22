@@ -5,10 +5,21 @@ import Lamp from "./Lamp";
 import * as THREE from "three";
 
 function Hero() {
+  const [inView, setInView] = useState(true);
   const [fade, setFade] = useState(0);
   if (typeof DeviceOrientationEvent?.requestPermission === "function") {
     DeviceOrientationEvent.requestPermission();
   }
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.01 },
+    );
+    const el = document.getElementById("top");
+    if (el) observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,7 +59,11 @@ function Hero() {
   `,
         }}
       >
-        <Canvas shadows camera={{ position: [0, 2.8, 7], fov: 38 }}>
+        <Canvas
+          shadows
+          frameloop={inView ? "always" : "never"}
+          camera={{ position: [0, 2.8, 7], fov: 38 }}
+        >
           <ambientLight intensity={0.25} />
 
           <spotLight
