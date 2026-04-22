@@ -32,7 +32,7 @@ function Hero() {
           Unikatni predmeti od drveta
         </h1>
 
-        <p className="font-telo text-lg md:text-xl text-gray-300 mt-4  drop-shadow-md">
+        <p className="font-telo text-lg md:text-xl text-gray-300 mt-4  drop-shadow-md tracking-wider">
           nastali u tišini radionice, oblikovani rukom, inspirisani prirodom
         </p>
       </div>

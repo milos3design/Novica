@@ -7,7 +7,6 @@ export default function About() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // 👇 ključ: setujemo true/false svaki put
         setVisible(entry.isIntersecting);
       },
       {
@@ -24,7 +23,7 @@ export default function About() {
     <section
       ref={ref}
       id="about"
-      className="w-full min-h-[99vh] py-32 px-[5%] md:px-[10%] bg-[#010101]"
+      className="w-full min-h-[99vh] py-32 px-[5%] md:px-[10%] bg-[#010101] scroll-mt-30"
     >
       <div
         className={`grid md:grid-cols-2 gap-12 items-center transition-all duration-700
@@ -33,29 +32,33 @@ export default function About() {
         {/* TEXT */}
         <div>
           <div className="inline-flex flex-col items-start mb-4">
-            <h2 className="font-naslov text-4xl text-white mb-2">O meni</h2>
+            <h2 className="font-naslov text-4xl text-white mb-2 mt-4">
+              O meni
+            </h2>
 
             <div className="w-16 h-0.5 bg-[#cbf2ff]/60" />
           </div>
 
-          <p className="text-gray-300 leading-relaxed">
+          <p className="text-gray-300 leading-relaxed mt-4">
             Svaki predmet koji nastane u mojoj radionici počinje kao ideja
             inspirisana prirodom i oblikom drveta. Ne pravim serijske proizvode
             — svaki komad je jedinstven, oblikovan ručno i sa pažnjom prema
             detalju.
           </p>
 
-          <p className="text-gray-300 leading-relaxed">
+          <p className="text-gray-300 leading-relaxed mt-4">
             Fokus je na jednostavnosti forme, funkcionalnosti i toplini
             materijala. Verujem da predmeti koje koristimo svakodnevno treba da
             imaju karakter i priču.
           </p>
         </div>
 
-        {/* IMAGE / PLACEHOLDER */}
         <div className="w-full h-100 md:h-125 rounded-2xl overflow-hidden bg-linear-to-br from-[#111] to-[#222] flex items-center justify-center">
-          {/* kasnije ubaci sliku */}
-          <span className="text-gray-500 font-telo">fotografija radionice</span>
+          <img
+            src={`${import.meta.env.BASE_URL}workshop.jpg`}
+            alt="Fotografija radionice"
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
     </section>

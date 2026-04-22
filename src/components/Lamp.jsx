@@ -63,33 +63,40 @@ export default function Lamp() {
 
     if (!headRef.current) return;
 
-    if (headRef.current) {
+    if (isMobile) {
+      current.current.x = THREE.MathUtils.lerp(
+        current.current.x,
+        input.current.x,
+        0.08,
+      );
+      current.current.y = THREE.MathUtils.lerp(
+        current.current.y,
+        input.current.y,
+        0.08,
+      );
+    } else {
       current.current.x = THREE.MathUtils.lerp(
         current.current.x,
         pointer.x,
         0.08,
       );
-
       current.current.y = THREE.MathUtils.lerp(
         current.current.y,
         pointer.y,
         0.08,
       );
-
-      //headRef.current.rotation.y = current.current.x * 1.2;
-
-      const x = current.current.x;
-      const rotY =
-        x < 0
-          ? x * Math.pow(Math.abs(x) + 0.001, 0.1) * 0.6
-          : x * Math.pow(Math.abs(x) + 0.001, -0.3) * 1.6;
-
-      headRef.current.rotation.y = rotY;
-      headRef.current.rotation.z = current.current.y * 0.6;
     }
 
+    const x = current.current.x;
+    const rotY =
+      x < 0
+        ? x * Math.pow(Math.abs(x) + 0.001, 0.1) * 0.6
+        : x * Math.pow(Math.abs(x) + 0.001, -0.3) * 1.6;
+
+    headRef.current.rotation.y = rotY;
+    headRef.current.rotation.z = current.current.y * 0.6;
+
     if (glassRef.current) {
-      // Pulsiranje svetla
       const breathe = Math.sin(t * 1.5) * 0.5 + 0.5;
       glassRef.current.material.emissiveIntensity = 0.8 + breathe * 0.25;
     }

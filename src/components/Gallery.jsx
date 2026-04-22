@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const base = import.meta.env.BASE_URL;
 const images = Array.from({ length: 20 }, (_, i) => ({
@@ -6,56 +6,91 @@ const images = Array.from({ length: 20 }, (_, i) => ({
   src: `${base}gallery/${i + 1}.jpg`,
 }));
 
+function useInView(threshold = 0.15) {
+  const ref = useRef();
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold },
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return [ref, visible];
+}
+
 export default function Gallery() {
   const [active, setActive] = useState(null);
+  const [titleRef, titleVisible] = useInView(0.3);
+  const [gridRef, gridVisible] = useInView(0.05);
 
   return (
-    <section id="gallery" className="w-full py-40 px-[10%] bg-[#010101]">
+    <section
+      id="gallery"
+      className="w-full  pt-20 pb-10 px-[10%] bg-[#010101] scroll-mt-20"
+    >
       {/* TITLE */}
-      <div className="text-center mb-16">
+      <div
+        ref={titleRef}
+        className={`text-center mb-16 transition-all duration-700
+          ${titleVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+      >
         <h2 className="font-naslov text-3xl md:text-5xl text-white">
           Galerija radova
         </h2>
         <div className="w-16 h-0.5 bg-[#cbf2ff]/60 mx-auto mt-2" />
       </div>
 
-      {/* GRID (exploded layout) */}
-      <div className="grid grid-cols-12 gap-6">
+      {/* GRID */}
+      <div ref={gridRef} className="grid grid-cols-12 gap-3 md:gap-6">
         {images.map((img, i) => {
-          // 🎯 controlled chaos rules
-          const span = (() => {
-            if (i % 9 === 0) return "col-span-7 row-span-2 h-[420px]";
-            if (i % 5 === 0) return "col-span-5 h-[260px]";
-            if (i % 3 === 0) return "col-span-4 h-[220px]";
-            return "col-span-3 h-[180px]";
+          const desktopSpan = (() => {
+            if (i % 9 === 0) return "md:col-span-7 md:h-[560px]";
+            if (i % 5 === 0) return "md:col-span-5 md:h-[360px]";
+            if (i % 3 === 0) return "md:col-span-4 md:h-[320px]";
+            return "md:col-span-3 md:h-[280px]";
+          })();
+
+          const mobileHeight = (() => {
+            if (i % 9 === 0) return "h-[280px]";
+            if (i % 5 === 0) return "h-[200px]";
+            if (i % 3 === 0) return "h-[240px]";
+            return "h-[180px]";
+          })();
+
+          const mobileSpan = (() => {
+            if (i % 9 === 0) return "col-span-12";
+            if (i % 7 === 0) return "col-span-12";
+            if (i % 4 === 0) return "col-span-6";
+            if (i % 3 === 0) return "col-span-6";
+            return "col-span-12";
           })();
 
           return (
             <div
               key={img.id}
               onClick={() => setActive(img.src)}
-              className={`${span} relative group cursor-pointer`}
+              className={`${mobileSpan} ${mobileHeight} ${desktopSpan} relative group cursor-pointer
+                transition-all duration-700
+                ${gridVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+              style={{ transitionDelay: gridVisible ? `${i * 60}ms` : "0ms" }}
             >
               <div className="w-full h-full overflow-hidden rounded-2xl">
                 <img
                   src={img.src}
                   className="w-full h-full object-cover
-                  transition-transform duration-700 group-hover:scale-110"
+              transition-transform duration-700 group-hover:scale-110"
                 />
-
-                {/* soft overlay */}
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition" />
-
-                {/* glow edge */}
                 <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-[#cbf2ff]/20 transition" />
               </div>
             </div>
           );
         })}
 
-        {/* EMPTY SPACE BLOCKS (IMPORTANT) */}
-        <div className="col-span-4 h-50" />
-        <div className="col-span-5 h-75" />
+        {/* <div className="hidden md:block col-span-4 h-50" />
+        <div className="hidden md:block col-span-5 h-75" /> */}
       </div>
 
       {/* LIGHTBOX */}
